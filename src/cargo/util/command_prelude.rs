@@ -281,8 +281,9 @@ pub trait ArgMatchesExt {
             // In general, we try to avoid normalizing paths in Cargo,
             // but in this particular case we need it to fix #3586.
             let path = paths::normalize_path(&path);
-            if !path.ends_with("Cargo.toml") {
-                anyhow::bail!("the manifest-path must be a path to a Cargo.toml file")
+            match path.file_name().map(|name| name.to_str()).flatten() {
+                Some(name) if name.starts_with("Cargo.") && name.ends_with(".toml") => {}
+                _ => anyhow::bail!("the manifest-path must be a path to a Cargo.toml file"),
             }
             if !path.exists() {
                 anyhow::bail!(
